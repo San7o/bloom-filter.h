@@ -1,0 +1,61 @@
+bloom-filter.h
+--------------
+
+A configurable, header-only implementation of bloom filters in C99
+with no dependencies.
+
+Author: Giovanni Santini
+Mail: giovanni.santini@proton.me
+License: MIT
+
+
+Documentation
+-------------
+
+A Bloom filter is a space-efficient probabilistic data structure
+that is used to test whether an element is a member of a set. False
+positives are possible, but false negatives are not — meaning it
+may report that an element is present when it is not, but it will
+never miss an element that was actually inserted.
+
+Internally, the filter uses a bit array and multiple independent
+hash functions.  When an element is added, each hash function maps
+it to a position in the bit array, and those bits are set. To check
+membership, the same hash functions are applied: if all
+corresponding bits are set, the element is *possibly* in the set;
+if any bit is not set, the element is definitely not in the set.
+
+Advantages:
+ - Extremely memory efficient for large sets
+ - Fast insert and query operations
+
+Limitations:
+ - Does not support removal of elements (in standard form)
+ - Allows false positives with a probability depending on filter
+   size and usage
+
+
+Usage
+-----
+
+Do this:
+  #define BLOOM_FILTER_IMPLEMENTATION
+before you include this file in *one* C or C++ file to create the
+implementation.
+
+i.e. it should look like this:
+  #include ...
+  #include ...
+  #include ...
+  #define BLOOM_FILTER_IMPLEMENTATION
+  #include "bloom-filter.h"
+
+You can tune the library by #defining certain values. See the
+"Config" comments under "Configuration" below.
+
+You need to initialize a filter with `bloom_init` and eventually
+destroy it with `bloom_destroy`. To register a value, use
+`bloom_register`. To check if a value is in the bloom filter, use
+`bloom_check`. See the function definitions for more information.
+
+Check some examples at the end of the header
