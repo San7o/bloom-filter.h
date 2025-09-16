@@ -39,11 +39,14 @@ Usage
 -----
 
 Do this:
+
   #define BLOOM_FILTER_IMPLEMENTATION
-before you include this file in *one* C or C++ file to create the
+
+before you include the header file in *one* C or C++ file to create the
 implementation.
 
 i.e. it should look like this:
+
   #include ...
   #include ...
   #include ...
@@ -51,7 +54,7 @@ i.e. it should look like this:
   #include "bloom-filter.h"
 
 You can tune the library by #defining certain values. See the
-"Config" comments under "Configuration" below.
+"Config" comments under "Configuration" in the header file.
 
 You need to initialize a filter with `bloom_init` and eventually
 destroy it with `bloom_destroy`. To register a value, use
