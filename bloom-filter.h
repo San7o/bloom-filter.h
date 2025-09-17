@@ -98,9 +98,9 @@ extern "C" {
 #endif
 
 // Config: The type of an hash key
-#ifndef BLOOM_FILTER_KEY_T
-  #define BLOOM_FILTER_KEY_T
-  typedef char* bloom_hash_key_t;
+#ifndef BLOOM_FILTER_HASH_INPUT_T
+  #define BLOOM_FILTER_HASH_INPUT_T
+  typedef char* bloom_hash_input_t;
 #endif
 
 // Config: The memory allocator.
@@ -151,12 +151,12 @@ typedef int bloom_error;
 // An hash function
 //
 // Args:
-//  - arg1: the key to hash
-//  - arg2: the size of the key. May be ignored depending on the
+//  - arg1: the input to hash
+//  - arg2: the size of the input. May be ignored depending on the
 //          implementation.
 //
 // Returns: A bloom_hash_t hash
-typedef bloom_hash_t (*bloom_hash_func_t)(bloom_hash_key_t, unsigned int);
+typedef bloom_hash_t (*bloom_hash_func_t)(bloom_hash_input_t, unsigned int);
 
 // A memory allocator.
 //
@@ -240,26 +240,26 @@ bloom_error bloom_destroy(bloom_filter_t *bloom_filter);
 //
 // Args:
 //  - bloom_filter: pointer to the bloom filter
-//  - key: the key of the bloom filter
-//  - key_len: the length of the key
+//  - input: the input of the bloom filter
+//  - input_len: the length of the input
 //
 // Returns: 0 on success, or a negative error
 bloom_error bloom_register(bloom_filter_t *bloom_filter,
-                           bloom_hash_key_t key,
-                           unsigned int key_len);
+                           bloom_hash_input_t input,
+                           unsigned int input_len);
 
-// Check whether a key is registered in a bloom filter
+// Check whether a value is registered in a bloom filter
 //
 // Args:
 //  - bloom_filter: pointer to the bloom filter
-//  - key: the key of the bloom filter
-//  - key_len: the length of the key
+//  - input: the input of the bloom filter
+//  - input_len: the length of the input
 //
-// Returns: true (1) if value with key is found, false (0) if the key
+// Returns: true (1) if value with input is found, false (0) if the input
 // was not found, or a negative bloom_error in case of failure.
 int bloom_check(bloom_filter_t *bloom_filter,
-                bloom_hash_key_t key,
-                unsigned int key_len);
+                bloom_hash_input_t input,
+                unsigned int input_len);
 
 // Merge the second bloom filter into the first
 //
@@ -274,22 +274,22 @@ bloom_error bloom_merge(bloom_filter_t *bloom_filter_dest,
 // Hash [bytes] of size [len]
 //
 // Args:
-//  - key: an hash key
-//  - key_len: the length of the hash key
+//  - input: an hash input
+//  - input_len: the length of the hash input
 //
-// Returns: the hashed value of the key
-bloom_hash_t bloom_hash1(bloom_hash_key_t key,
-                         unsigned int key_len);
+// Returns: the hashed value of the input
+bloom_hash_t bloom_hash1(bloom_hash_input_t input,
+                         unsigned int input_len);
 
 // Hash [bytes] of size [len]
 //
 // Args:
-//  - key: an hash key
-//  - key_len: the length of the hash key
+//  - input: an hash input
+//  - input_len: the length of the hash input
 //
-// Returns: the hashed value of the key
-bloom_hash_t bloom_hash2(bloom_hash_key_t key,
-                         unsigned int key_len);
+// Returns: the hashed value of the input
+bloom_hash_t bloom_hash2(bloom_hash_input_t input,
+                         unsigned int input_len);
 
 // Get the error as a string
 //
@@ -339,8 +339,8 @@ bloom_error bloom_destroy(bloom_filter_t *bloom_filter)
 }
 
 bloom_error bloom_register(bloom_filter_t *bloom_filter,
-                           bloom_hash_key_t key,
-                           unsigned int key_len)
+                           bloom_hash_input_t input,
+                           unsigned int input_len)
 {
   if (bloom_filter == NULL)
     return BLOOM_ERROR_FILTER_NULL;
@@ -350,8 +350,8 @@ bloom_error bloom_register(bloom_filter_t *bloom_filter,
 
   for (unsigned int i = 0; i < bloom_filter->number_of_hashes; ++i)
   {
-    bloom_hash_t hash1 = bloom_filter->hash1(key, key_len);
-    bloom_hash_t hash2 = bloom_filter->hash2(key, key_len);
+    bloom_hash_t hash1 = bloom_filter->hash1(input, input_len);
+    bloom_hash_t hash2 = bloom_filter->hash2(input, input_len);
     
     // Kirsch-Mitzenmacher-Optimization
     // https://www.eecs.harvard.edu/~michaelm/postscripts/tr-02-05.pdf
@@ -364,8 +364,8 @@ bloom_error bloom_register(bloom_filter_t *bloom_filter,
 
 
 int bloom_check(bloom_filter_t *bloom_filter,
-                bloom_hash_key_t key,
-                unsigned int key_len)
+                bloom_hash_input_t input,
+                unsigned int input_len)
 {
   if (bloom_filter == NULL)
     return BLOOM_ERROR_FILTER_NULL;
@@ -376,8 +376,8 @@ int bloom_check(bloom_filter_t *bloom_filter,
   bool present = true;
   for (unsigned int i = 0; i < bloom_filter->number_of_hashes; ++i)
   {
-    bloom_hash_t hash1 = bloom_filter->hash1(key, key_len);
-    bloom_hash_t hash2 = bloom_filter->hash2(key, key_len);
+    bloom_hash_t hash1 = bloom_filter->hash1(input, input_len);
+    bloom_hash_t hash2 = bloom_filter->hash2(input, input_len);
     
     // Kirsch-Mitzenmacher-Optimization
     // https://www.eecs.harvard.edu/~michaelm/postscripts/tr-02-05.pdf
@@ -411,10 +411,10 @@ bloom_error bloom_merge(bloom_filter_t *bloom_filter_dest,
 }
 
 // Credits to http://www.cse.yorku.ca/~oz/hash.html
-unsigned int bloom_hash_djb2(const char *bytes, unsigned int key_len)
+unsigned int bloom_hash_djb2(const char *bytes, unsigned int input_len)
 {
   unsigned int hash = 5381;
-  for (unsigned int i = 0; i < key_len; ++i)
+  for (unsigned int i = 0; i < input_len; ++i)
   {
     hash = ((hash << 5) + hash) + bytes[i]; /* hash * 33 + c */
   }
@@ -422,10 +422,10 @@ unsigned int bloom_hash_djb2(const char *bytes, unsigned int key_len)
 }
 
 // Credits to http://www.cse.yorku.ca/~oz/hash.html
-unsigned int bloom_hash_sdbm(const char *bytes, unsigned int key_len)
+unsigned int bloom_hash_sdbm(const char *bytes, unsigned int input_len)
 {
   unsigned int hash = 0;
-  for (unsigned int i = 0; i < key_len; ++i)
+  for (unsigned int i = 0; i < input_len; ++i)
   {
     hash = bytes[i] + (hash << 6) + (hash << 16) - hash;
   }
@@ -433,16 +433,16 @@ unsigned int bloom_hash_sdbm(const char *bytes, unsigned int key_len)
   return hash;
 }
 
-bloom_hash_t bloom_hash1(bloom_hash_key_t key,
-                         unsigned int key_len)
+bloom_hash_t bloom_hash1(bloom_hash_input_t input,
+                         unsigned int input_len)
 {
-  return bloom_hash_djb2(key, key_len);
+  return bloom_hash_djb2(input, input_len);
 }
 
-bloom_hash_t bloom_hash2(bloom_hash_key_t key,
-                         unsigned int key_len)
+bloom_hash_t bloom_hash2(bloom_hash_input_t input,
+                         unsigned int input_len)
 {
-  return bloom_hash_sdbm(key, key_len);
+  return bloom_hash_sdbm(input, input_len);
 }
 
 #if _BLOOM_ERROR_MAX != -4
