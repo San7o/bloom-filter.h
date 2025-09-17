@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: MIT
 //
 // bloom-filter.h
+// --------------
 //
 // A configurable, header-only implementation of bloom filters in C99
 // with no dependencies.
@@ -13,7 +14,7 @@
 //
 //
 // Documentation
-//
+// -------------
 //
 // A Bloom filter is a space-efficient probabilistic data structure
 // that is used to test whether an element is a member of a set. False
@@ -39,7 +40,7 @@
 //
 //
 // Usage
-//
+// -----
 //
 // Do this:
 //
@@ -93,14 +94,12 @@ extern "C" {
 
 // Config: The type of an hash
 #ifndef BLOOM_FILTER_HASH_T
-  typedef unsigned int bloom_hash_t;
-  #define BLOOM_FILTER_HASH_T
+  #define BLOOM_FILTER_HASH_T unsigned int
 #endif
 
 // Config: The type of an hash key
 #ifndef BLOOM_FILTER_HASH_INPUT_T
-  #define BLOOM_FILTER_HASH_INPUT_T
-  typedef char* bloom_hash_input_t;
+  #define BLOOM_FILTER_HASH_INPUT_T char*
 #endif
 
 // Config: The memory allocator.
@@ -148,6 +147,9 @@ typedef int bloom_error;
   #define false 0
 #endif
 
+typedef BLOOM_FILTER_HASH_T bloom_hash_t;
+typedef BLOOM_FILTER_HASH_INPUT_T bloom_hash_input_t;
+  
 // An hash function
 //
 // Args:
