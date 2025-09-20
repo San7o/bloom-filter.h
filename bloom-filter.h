@@ -319,8 +319,8 @@ bloom_error _bloom_init_impl(bloom_filter_t *bloom_filter,
   if (bloom_filter->size == 0)
     return BLOOM_OK;
 
-  bloom_filter->_array = BLOOM_FILTER_CALLOC(sizeof(bool),
-                                             bloom_filter->size);
+  bloom_filter->_array = BLOOM_FILTER_CALLOC(bloom_filter->size,
+                                             sizeof(bool));
   if (bloom_filter->_array == NULL)
     return BLOOM_ERROR_ALLOCATION_FAILED;
 
